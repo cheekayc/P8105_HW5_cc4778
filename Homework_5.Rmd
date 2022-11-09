@@ -1,0 +1,13 @@
+---
+title: "Homework 5"
+author: "Chee Kay Cheong"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+library(tidyverse)
+```
+
+
