@@ -5,7 +5,16 @@ output: github_document
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 12,
+  fig.height = 8,
+  out.width = "90%")
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis")
 
 library(tidyverse)
 library(fs)
@@ -56,4 +65,41 @@ long_study =
 
 long_study
 ```
+
+```{r}
+long_study %>% 
+  group_by(arm, subject_ID) %>% 
+  summarize(
+    n_obs = n())
+```
+
+
+The `long_study` dataset contains 2 arms (experimental & control). Each arm contains 10 subjects, and each subject contributes 8 observations 
+over the period of 8 weeks (1 observation per week for each subject).
+
+Everything looks fine and data are cleaned, but I don't understand what the values under `observations` are representing.
+
+```{r}
+Arms_name = c(
+  `con` = "Control",
+  `exp` = "Experimental")
+
+long_study %>% 
+  ggplot(aes(x = week, y = observations, group = subject_ID, color = subject_ID)) +
+  geom_line() + 
+  stat_summary(aes(group = 1), geom = "point", fun.y = mean, shape = 17, size = 3) +
+  facet_grid( . ~ arm, labeller = as_labeller(Arms_name)) +
+  labs(
+    x = "Week",
+    y = "Observations",
+    title = "Observations over time graph") 
+```
+
+Based on the spaghetti plot, the overall observations over 8 weeks of time are higher in the experimental group when comparing to the control group.
+
+In the experimental group, the mean observations are increasing with time, whereas the mean observations in the control group do not have much changes with time. 
+
+
+# Problem 2
+
 
