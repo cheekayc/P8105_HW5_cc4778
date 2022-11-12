@@ -12,10 +12,6 @@ knitr::opts_chunk$set(
   fig.height = 8,
   out.width = "90%")
 
-options(
-  ggplot2.continuous.colour = "viridis",
-  ggplot2.continuous.fill = "viridis")
-
 library(tidyverse)
 library(fs)
 ```
@@ -25,7 +21,7 @@ library(fs)
 Create a list to read and store all the csv files located in the *Data* folder.
 ```{r map funstion to read multiple csv files}
 # I first create a directory that contains the path to all the csv files stored in the Data folder.
-Data = "C:/Users/Chu Chu/Desktop/R/Homework/HW5/Data/"
+Data = "C:/Users/Chu Chu/Desktop/R/Homework/HW5/Problem 1 Data/"
 
 # Then I create a list that will contain all the csv file from the Data folder.
 study_list = 
@@ -52,7 +48,7 @@ long_study =
   bind_rows(.id = "file_path") %>% 
   # Create two variables "arm" & "subject_ID" for each observation.
   mutate(
-    arm = str_replace(file_path, "^C:/Users/Chu Chu/Desktop/R/Homework/HW5/Data/", ""),
+    arm = str_replace(file_path, "^C:/Users/Chu Chu/Desktop/R/Homework/HW5/Problem 1 Data/", ""),
     arm = str_replace(arm, ".csv$", "")) %>% 
     separate(arm, c('arm', 'subject_ID')) %>% 
   select(arm, subject_ID, week_1:week_8, -file_path) %>% 
@@ -92,7 +88,8 @@ long_study %>%
   labs(
     x = "Week",
     y = "Observations",
-    title = "Observations over time graph") 
+    title = "Observations over time graph") +
+  theme_minimal() + theme(legend.position = "bottom")
 ```
 
 Based on the spaghetti plot, the overall observations over 8 weeks of time are higher in the experimental group when comparing to the control group.
@@ -101,5 +98,19 @@ In the experimental group, the mean observations are increasing with time, where
 
 
 # Problem 2
+
+```{r read and clean dataset}
+homicide_raw = read_csv("./Data/homicide_data.csv") 
+
+homicides =
+  homicide_raw%>% 
+  janitor::clean_names() %>% 
+  mutate(
+    victim_age = str_replace(victim_age, "Unknown", "NA"),
+    victim_age = as.numeric(victim_age)) %>% 
+  unite(col = 'city_state', c('city', 'state'), sep = ', ')
+```
+
+The raw dataset `homicide_raw` consists of `r ncol(homicide_raw)` variables (*`r names(homicide_raw)`*) and `r nrow(homicide_raw)` observations. 
 
 
