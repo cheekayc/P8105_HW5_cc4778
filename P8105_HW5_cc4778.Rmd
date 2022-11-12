@@ -8,6 +8,52 @@ output: html_document
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 library(tidyverse)
+library(fs)
 ```
 
+# Problem 1
+
+Create a list to read and store all the csv files located in the *Data* folder.
+```{r map funstion to read multiple csv files}
+# I first create a directory that contains the path to all the csv files stored in the Data folder.
+Data = "C:/Users/Chu Chu/Desktop/R/Homework/HW5/Data/"
+
+# Then I create a list that will contain all the csv file from the Data folder.
+study_list = 
+  Data %>% 
+  # The "dir_ls" function returns filenames as a named fs_path character vector. 
+  # The names are equivalent to the values, which is useful for passing onto functions like purrr::map_df().
+  dir_ls() %>% 
+  map(
+    # Then, map a function that will read csv files.
+    .f = function(path) {
+      read_csv(path)
+    }
+  )
+```
+
+Create a single dataframe that combines all data in each csv files.
+```{r bind rows to make one tidy dataframe}
+# I create a dataframe that read the list of csv files and bind all the rows into one dataframe.
+long_study = 
+  study_list %>% 
+  # "set_names" allows R to show all the columns and values from the list of csv files.
+  set_names(dir_ls(Data)) %>% 
+  # Then, bind all of them together to make one tidy dataframe.
+  bind_rows(.id = "file_path") %>% 
+  # Create two variables "arm" & "subject_ID" for each observation.
+  mutate(
+    arm = str_replace(file_path, "^C:/Users/Chu Chu/Desktop/R/Homework/HW5/Data/", ""),
+    arm = str_replace(arm, ".csv$", "")) %>% 
+    separate(arm, c('arm', 'subject_ID')) %>% 
+  select(arm, subject_ID, week_1:week_8, -file_path) %>% 
+  # pivot_longer so we can do some analysis later
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "observations",
+    names_prefix = "week_")
+
+long_study
+```
 
