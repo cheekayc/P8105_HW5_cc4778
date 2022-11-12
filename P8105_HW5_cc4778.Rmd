@@ -75,7 +75,7 @@ over the period of 8 weeks (1 observation per week for each subject).
 
 Everything looks fine and data are cleaned, but I don't understand what the values under `observations` are representing.
 
-```{r}
+```{r spaghetti plot}
 Arms_name = c(
   `con` = "Control",
   `exp` = "Experimental")
