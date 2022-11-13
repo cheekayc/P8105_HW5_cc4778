@@ -229,7 +229,7 @@ all_cities_stat
 
 ##### Create a plot
 
-Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+Create a plot that shows the estimated proportion of unsolved homicides and their corresponding 95% confidence intervals for each city.
 
 ```{r bar plot with error bar}
 all_cities_stat %>% 
@@ -244,5 +244,22 @@ all_cities_stat %>%
   theme_minimal() +
   theme(legend.position = "none")
 ```
+
+
+# Problem 3
+
+```{r create a list of dataframes}
+sample_list = vector(mode = 'list', length = 5)
+  n = 5
+  for (i in 1:n) {
+    sample_list[[i]] = rnorm(30, 0, 5)
+  }
+```
+
+```{r create a function for list}
+
+```
+
+
 
 
