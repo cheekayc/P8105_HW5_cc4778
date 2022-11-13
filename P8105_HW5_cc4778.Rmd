@@ -99,18 +99,76 @@ In the experimental group, the mean observations are increasing with time, where
 
 # Problem 2
 
-```{r read and clean dataset}
-homicide_raw = read_csv("./Data/homicide_data.csv") 
+##### Raw data
 
+```{r read raw dataset}
+homicide_raw = read_csv("./Data/homicide_data.csv") 
+```
+
+The raw dataset `homicide_raw` consists of `r ncol(homicide_raw)` variables (*`r names(homicide_raw)`*) and `r nrow(homicide_raw)` observations.                                                            
+Missing observations in the latitude `lat` and longitude `lon` columns are identified as `NA`, while all other columns have some `Unknown` observations.                                                    
+Most variables are character vectors, except for `reported_date`, `lat`, and `lon`, which are numeric vector.                                                                                                
+I noticed that the dates are recorded in *yyyymmdd* format, which are not in typical date format and are not arranged in sequence. 
+Besides, `victim_age` has been identified as character vector due to several `Unknown` under the column. 
+
+Therefore, I would convert the `reported_date` to a nice date format and convert the `victim_age` variable into a numeric vector.
+
+##### Cleaned data
+
+```{r clean dataset}
 homicides =
   homicide_raw%>% 
   janitor::clean_names() %>% 
   mutate(
     victim_age = str_replace(victim_age, "Unknown", "NA"),
-    victim_age = as.numeric(victim_age)) %>% 
+    victim_age = as.numeric(victim_age),
+    reported_date = as.character(reported_date),
+    reported_date = as.Date(reported_date, format = "%Y%m%d")) %>% 
   unite(col = 'city_state', c('city', 'state'), sep = ', ')
 ```
 
-The raw dataset `homicide_raw` consists of `r ncol(homicide_raw)` variables (*`r names(homicide_raw)`*) and `r nrow(homicide_raw)` observations. 
+##### Number of homicides & number of unsolved homicides in 50 cities
+
+The table below shows the number of homicides and the number of unsolved homicides in each city.
+```{r}
+homicides %>% 
+  group_by(city_state) %>% 
+  summarize(
+    n_case = n(),
+    n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest"))) %>% 
+  knitr::kable()
+```
+From the output, I noticed that there was an error in the `homicides` dataset. There is a `city_state` named *Tulsa, Alabama* 
+that has only 1 case of homicide but has 0 case of unsolved homicide. I googled and checked if there is a city named *Tulsa* 
+in *Alabama*. I found that there is only one place named *Tulsa* in America, and that is in *Oklahoma*. Therefore, I am pretty 
+sure that there is an error in the data and decided to fix that error by changing `Tulsa, AL` to `Tulsa, OK`.
+
+I also noticed another minor issue with the dataset from the table above - `Milwaukee, wI`.
+Although it probably is not a big issue, but to keep my dataset nice and tidy, I decided to make the lowercase "w" to uppercase "W".
+
+
+
+For the city of Baltimore, MD, estimate the proportion of homicides that are unsolved; 
+save the output as an R object, apply the broom::tidy to this object and 
+pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+
+From the table above, we know that there are a total of **2827** homicide cases and **1825** unsolved homicide cases in **Baltimore, MD**
+```{r Baltimore}
+Baltimore = 
+  homicides %>% 
+  filter(city_state %in% "Baltimore, MD") %>% 
+  group_by(city_state) %>% 
+  summarize(
+    n_case = n(),
+    n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest")))
+
+list_baltimore = 
+  prop.test(x = 1825, n = 2827) %>% 
+  broom::tidy()
+
+list_baltimore %>% 
+  select(estimate, conf.low, conf.high) %>% 
+  knitr::kable()
+```
 
 
