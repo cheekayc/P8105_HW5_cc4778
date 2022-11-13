@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 
 library(tidyverse)
 library(fs) # Load this to use "dir_ls" and map function after that.
+library(purrr)
 ```
 
 # Problem 1
@@ -172,11 +173,60 @@ list_baltimore =
   prop.test(x_balti, n_balti) %>% 
   broom::tidy()
 
-list_baltimore %>% 
-  select(estimate, conf.low, conf.high) %>% 
+Baltimore_stat = 
+  bind_cols(Baltimore, list_baltimore)
+
+Baltimore_stat %>% 
+  select(city_state, n_case, n_unsolved, estimate, conf.low, conf.high) %>% 
   knitr::kable()
 ```
 
 In Baltimore, MD, it is estimated that **64.56%** of homicides remained unsolved. We are 95% confident that the proportion of 
 unsolved homicides in Baltimore, MD lies between *62.76%* and *66.32%*.
+
+
+##### All cities
+
+```{r}
+all_cities = 
+  homicides %>% 
+  group_by(city_state) %>% 
+  summarize(
+    n_case = n(),
+    n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest"))) %>% 
+  nest(data = n_case:n_unsolved)
+```
+
+```{r write a function}
+prop_unsolved = function(df) {
+
+  x = df %>% pull(n_unsolved)
+  
+  n = df %>% pull(n_case)
+  
+  results = 
+    prop.test(x, n) %>% 
+    broom::tidy()
+
+  result_stat = 
+    bind_cols(df, results)
+
+  result_stat %>% 
+    select(estimate, conf.low, conf.high)
+  
+}
+```
+
+
+```{r}
+all_cities_stat = 
+  all_cities %>% 
+  mutate(
+    map_df(all_cities[["data"]], prop_unsolved)) %>% 
+  unnest(data)
+
+all_cities_stat
+```
+
+
 
