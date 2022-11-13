@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   out.width = "90%")
 
 library(tidyverse)
-library(fs)
+library(fs) # Load this to use "dir_ls" and map function after that.
 ```
 
 # Problem 1
@@ -123,7 +123,9 @@ homicides =
     victim_age = str_replace(victim_age, "Unknown", "NA"),
     victim_age = as.numeric(victim_age),
     reported_date = as.character(reported_date),
-    reported_date = as.Date(reported_date, format = "%Y%m%d")) %>% 
+    reported_date = as.Date(reported_date, format = "%Y%m%d"),
+    state = ifelse(city == "Tulsa", "OK", state),
+    state = str_replace(state, "w", "W")) %>%
   unite(col = 'city_state', c('city', 'state'), sep = ', ')
 ```
 
@@ -138,32 +140,36 @@ homicides %>%
     n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest"))) %>% 
   knitr::kable()
 ```
+
 From the output, I noticed that there was an error in the `homicides` dataset. There is a `city_state` named *Tulsa, Alabama* 
 that has only 1 case of homicide but has 0 case of unsolved homicide. I googled and checked if there is a city named *Tulsa* 
-in *Alabama*. I found that there is only one place named *Tulsa* in America, and that is in *Oklahoma*. Therefore, I am pretty 
+in *Alabama*. I found that there is only one place named *Tulsa* in America, and that is in *Oklahoma*. Hence, I am pretty 
 sure that there is an error in the data and decided to fix that error by changing `Tulsa, AL` to `Tulsa, OK`.
 
 I also noticed another minor issue with the dataset from the table above - `Milwaukee, wI`.
 Although it probably is not a big issue, but to keep my dataset nice and tidy, I decided to make the lowercase "w" to uppercase "W".
 
+I will make all the changes in the code chunk named `clean dataset` above, so I am not repeating the codes and starting another 
+code chunk. 
 
 
-For the city of Baltimore, MD, estimate the proportion of homicides that are unsolved; 
-save the output as an R object, apply the broom::tidy to this object and 
-pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+##### Baltimore
 
-From the table above, we know that there are a total of **2827** homicide cases and **1825** unsolved homicide cases in **Baltimore, MD**
 ```{r Baltimore}
 Baltimore = 
   homicides %>% 
-  filter(city_state %in% "Baltimore, MD") %>% 
+  filter(city_state == "Baltimore, MD") %>% 
   group_by(city_state) %>% 
   summarize(
     n_case = n(),
     n_unsolved = sum(disposition %in% c("Closed without arrest", "Open/No arrest")))
 
+x_balti = Baltimore %>% pull(n_unsolved)
+
+n_balti = Baltimore %>% pull(n_case)
+
 list_baltimore = 
-  prop.test(x = 1825, n = 2827) %>% 
+  prop.test(x_balti, n_balti) %>% 
   broom::tidy()
 
 list_baltimore %>% 
@@ -171,4 +177,6 @@ list_baltimore %>%
   knitr::kable()
 ```
 
+In Baltimore, MD, it is estimated that **64.56%** of homicides remained unsolved. We are 95% confident that the proportion of 
+unsolved homicides in Baltimore, MD lies between *62.76%* and *66.32%*.
 
