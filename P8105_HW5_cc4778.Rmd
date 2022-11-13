@@ -187,7 +187,7 @@ unsolved homicides in Baltimore, MD lies between *62.76%* and *66.32%*.
 
 ##### All cities
 
-```{r}
+```{r a neat dataframe to be used}
 all_cities = 
   homicides %>% 
   group_by(city_state) %>% 
@@ -217,8 +217,7 @@ prop_unsolved = function(df) {
 }
 ```
 
-
-```{r}
+```{r apply function}
 all_cities_stat = 
   all_cities %>% 
   mutate(
@@ -228,5 +227,22 @@ all_cities_stat =
 all_cities_stat
 ```
 
+##### Create a plot
+
+Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+
+```{r bar plot with error bar}
+all_cities_stat %>% 
+  mutate(city_state = fct_reorder(city_state, estimate)) %>% 
+  ggplot(aes(x = estimate, y = city_state, fill = city_state)) +
+  geom_bar(stat="identity") +
+  geom_errorbar(aes(xmin = conf.low, xmax = conf.high), width = 0.5) +
+  labs(
+    x = "Proportion of unsolved homicide",
+    y = "City, State",
+    title = "Proportion of unsolved homicide with 95% CI in 50 major cities in the US") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
 
 
