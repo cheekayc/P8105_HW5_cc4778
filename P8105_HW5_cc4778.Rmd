@@ -285,11 +285,12 @@ First_set_tidy = bind_cols(first_list_df, test_one)
 First_set_tidy
 ```
 
-#### Change the values of true mean
+#### Different values of true mean
 
-Repeat the above for μ = {1,2,3,4,5,6}. Just in case, we need to include the one dataframe we created above (true mean = 0). 
-I am going to include true mean = 0 in the iteration below.
+Repeat the above for μ = {1,2,3,4,5,6}. Just in case we need to include that one dataframe we created above (true mean = 0). 
+I am going to include true mean = 0 as well in the iteration below.
 
+Write a function:
 ```{r create function for mean change}
 change_mean = function(mu) {
   
@@ -308,6 +309,7 @@ change_mean = function(mu) {
 }
 ```
 
+Create a nice and tidy dataframe:
 ```{r create dataframe for mean change, cache = TRUE}
 multiple_mean = 
   expand_grid(   
@@ -320,7 +322,11 @@ multiple_mean =
 multiple_mean =
   multiple_mean %>% 
   select(random_x, sample_size, true_sd, true_mean, mean_hat, p_value)
+
+multiple_mean
 ```
+
+##### Plot 1: Power vs. Effect size
 
 ```{r plot1}
 multiple_mean %>% 
@@ -336,6 +342,12 @@ multiple_mean %>%
     title = "Proportion of rejecting H0 for each sample with different true mean") +
   theme_minimal()
 ```
+
+As we can see from the plot above, the proportion of times the null was rejected increases as the value of true mean increases.
+In other words, when the value of true mean is further away from the null (μ = 0), meaning the effect size increases, the power also increases.
+
+
+##### Plot 2: 
 
 ```{r plot2, fig.height = 10, fig.width = 11}
 ave_all =
@@ -363,4 +375,17 @@ ggplot(ave_all, aes(x = true_mean, y = average_mean_hat, color = "All samples"))
   theme_minimal()
 ```
 
+Based on the graph above, the sample average means when taking all samples (*the red line*) are approximately equal to the true value of mean (μ).
 
+Looking at the *blue line* in which the sample average means are computed based **only** on the samples that rejected the null hypothesis ($H_0: μ = 0$),
+we can see that average sample mean only closely approximate the true mean when the value of sample average mean increases, specifically after the mean 
+value of 3. It kind of make sense because when our true mean values are small (in this case < 4), the sample means must be large enough (greater than 0) 
+to reject the null hypothesis. 
+
+Take the mean value of 1 as an example, because the effect size is so small, when we filtered out the samples that failed
+to reject the null hypothesis, the remaining mean values must be large enough. That is why we see the sample average mean is somewhere around 2.25 when
+the true mean is 1.
+
+In contrast, when the effect size is large enough (eg. mean = 4), almost all of samples rejected the null hypothesis. This claim can be supported by plot 1
+where the proportion of rejecting H0 when the true mean value equals to 4 is approximately 1. In this case, not many samples will be filtered out, and the 
+average sample mean will closely approximate the true mean.
