@@ -287,9 +287,11 @@ First_set_tidy
 
 #### Change the values of true mean
 
-Repeat the above for μ = {1,2,3,4,5,6}
-```{r}
-try_try = function(mu) {
+Repeat the above for μ = {1,2,3,4,5,6}. Just in case, we need to include the one dataframe we created above (true mean = 0). 
+I am going to include true mean = 0 in the iteration below.
+
+```{r create function for mean change}
+change_mean = function(mu) {
   
   x = rnorm(30, mu, 5)
   
@@ -306,50 +308,59 @@ try_try = function(mu) {
 }
 ```
 
-```{r}
-sim_try = 
+```{r create dataframe for mean change, cache = TRUE}
+multiple_mean = 
   expand_grid(   
     true_mean = c(0, 1, 2, 3, 4, 5, 6), 
-    iteration = 1:5) %>%   
+    iteration = 1:5000) %>%   
   mutate(
-    estimate_measures = map(true_mean, try_try)) %>% 
+    estimate_measures = map(true_mean, change_mean)) %>% 
   unnest(estimate_measures)
 
- sim_try =
-   sim_try %>% 
-    select(random_x, sample_size, true_sd, true_mean, mean_hat, p_value)
+multiple_mean =
+  multiple_mean %>% 
+  select(random_x, sample_size, true_sd, true_mean, mean_hat, p_value)
 ```
 
-```{r}
-sim_try %>% 
+```{r plot1}
+multiple_mean %>% 
   group_by(true_mean) %>% 
   summarize(
-    prop = sum(p_value < 0.05) / 5) %>% 
-  ggplot(aes(x = true_mean, y = prop)) +
+    prop_reject = sum(p_value < 0.05) / 5000) %>% 
+  ggplot(aes(x = true_mean, y = prop_reject)) +
   geom_point() +
-  geom_line()
+  geom_line() + 
+  labs(
+    x = "True mean",
+    y = "Proportion",
+    title = "Proportion of rejecting H0 for each sample with different true mean") +
+  theme_minimal()
 ```
 
-```{r, fig.height = 10, fig.width = 10}
-sim_one =
-  sim_try %>% 
+```{r plot2, fig.height = 10, fig.width = 11}
+ave_all =
+  multiple_mean %>% 
   group_by(true_mean) %>% 
   summarize(
     average_mean_hat = mean(mean_hat))
 
-sim_two = 
-  sim_try %>% 
+ave_rej = 
+  multiple_mean %>% 
   filter(p_value < 0.05) %>% 
   group_by(true_mean) %>% 
   summarize(
     average_mean_hat = mean(mean_hat))
 
-ggplot(sim_one, aes(x = true_mean, y = average_mean_hat)) +
+ggplot(ave_all, aes(x = true_mean, y = average_mean_hat, color = "All samples")) +
   geom_point() +
   geom_line() + 
-  geom_line(data = sim_two, color = "red", alpha = 0.4) +
-  geom_point(data = sim_two, color = "red", alpha = 0.4)
-
+  geom_line(data = ave_rej, aes(x = true_mean, y = average_mean_hat, color = "Reject H0 samples"), alpha = 0.4) +
+  geom_point(data = ave_rej, aes(x = true_mean, y = average_mean_hat, color = "Reject H0 samples"), alpha = 0.4) +
+  labs(
+    x = "True mean",
+    y = "Average sample mean",
+    title = "Average sample means vs. True means") +
+  theme_minimal()
 ```
 
 
