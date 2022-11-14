@@ -248,18 +248,108 @@ all_cities_stat %>%
 
 # Problem 3
 
+Create a list of 5000 dataframes, which each of them is comprised of 30 random numbers that follow a normal distribution of 
+mean = 0 and standard deviation = 5.
+
 ```{r create a list of dataframes}
-sample_list = vector(mode = 'list', length = 5)
-  n = 5
+first_set = vector(mode = 'list', length = 5000)
+  n = 5000
   for (i in 1:n) {
-    sample_list[[i]] = rnorm(30, 0, 5)
+    first_set[[i]] = rnorm(30, 0, 5)
   }
 ```
 
+Create a function to obtain the estimated mean of each sample and their corresponding p-value.
 ```{r create a function for list}
-
+samp_mean_p = function(x) {
+  
+  samp_results = t.test(x, mu = 0) %>% 
+    broom::tidy() %>% 
+    select(estimate, p.value) %>% 
+    rename(
+      mean_hat = estimate,
+      p_value = p.value)
+}
 ```
 
+Apply function to the list and store the output in a nice dataframe.
+```{r apply function to first list}
+first_list_df = 
+  tibble(
+  sample = first_set)
 
+test_one = map_df(first_set, samp_mean_p)
+
+First_set_tidy = bind_cols(first_list_df, test_one)
+
+First_set_tidy
+```
+
+#### Change the values of true mean
+
+Repeat the above for μ = {1,2,3,4,5,6}
+```{r}
+try_try = function(mu) {
+  
+  x = rnorm(30, mu, 5)
+  
+  samp_results = t.test(x, mu = 0) %>% 
+    broom::tidy() %>% 
+    select(estimate, p.value) %>% 
+    rename(
+      mean_hat = estimate,
+      p_value = p.value) %>% 
+    mutate(
+      random_x = list(x),
+      sample_size = 30,
+      true_sd = 5)
+}
+```
+
+```{r}
+sim_try = 
+  expand_grid(   
+    true_mean = c(0, 1, 2, 3, 4, 5, 6), 
+    iteration = 1:5) %>%   
+  mutate(
+    estimate_measures = map(true_mean, try_try)) %>% 
+  unnest(estimate_measures)
+
+ sim_try =
+   sim_try %>% 
+    select(random_x, sample_size, true_sd, true_mean, mean_hat, p_value)
+```
+
+```{r}
+sim_try %>% 
+  group_by(true_mean) %>% 
+  summarize(
+    prop = sum(p_value < 0.05) / 5) %>% 
+  ggplot(aes(x = true_mean, y = prop)) +
+  geom_point() +
+  geom_line()
+```
+
+```{r, fig.height = 10, fig.width = 10}
+sim_one =
+  sim_try %>% 
+  group_by(true_mean) %>% 
+  summarize(
+    average_mean_hat = mean(mean_hat))
+
+sim_two = 
+  sim_try %>% 
+  filter(p_value < 0.05) %>% 
+  group_by(true_mean) %>% 
+  summarize(
+    average_mean_hat = mean(mean_hat))
+
+ggplot(sim_one, aes(x = true_mean, y = average_mean_hat)) +
+  geom_point() +
+  geom_line() + 
+  geom_line(data = sim_two, color = "red", alpha = 0.4) +
+  geom_point(data = sim_two, color = "red", alpha = 0.4)
+
+```
 
 
