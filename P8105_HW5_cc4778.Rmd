@@ -313,7 +313,7 @@ change_mean = function(mu) {
 ```
 
 Create a nice and tidy dataframe:
-```{r create dataframe for mean change, cache = TRUE}
+```{r create dataframe for mean change}
 multiple_mean = 
   expand_grid(   
     true_mean = c(0, 1, 2, 3, 4, 5, 6), 
