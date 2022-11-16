@@ -182,10 +182,13 @@ Baltimore_stat %>%
 ```
 
 In Baltimore, MD, it is estimated that **64.56%** of homicides remained unsolved. We are 95% confident that the proportion of 
-unsolved homicides in Baltimore, MD lies between *62.76%* and *66.32%*.
+unsolved homicides in Baltimore, MD lies between *0.63* and *0.66*.
 
 
 ##### All cities
+
+I will be creating a neat dataframe that shows the number of homicide cases, the number of unsolved homicide cases, the proportion
+of unsolved homicides and their corresponding 95% confidence interval in each of the 50 major cities.
 
 ```{r a neat dataframe to be used}
 all_cities = 
@@ -377,7 +380,7 @@ ggplot(ave_all, aes(x = true_mean, y = average_mean_hat, color = "All samples"))
 
 Based on the graph above, the sample average means when taking all samples (*the red line*) are approximately equal to the true value of mean (μ).
 
-Looking at the *blue line* in which the sample average means are computed based **only** on the samples that rejected the null hypothesis ($H_0: μ = 0$),
+Looking at the *blue line* in which the sample average means are computed based **only** on the samples that rejected the null hypothesis (H0: μ = 0),
 we can see that average sample mean only closely approximate the true mean when the value of sample average mean increases, specifically after the mean 
 value of 3. It kind of make sense because when our true mean values are small (in this case < 4), the sample means must be large enough (greater than 0) 
 to reject the null hypothesis. 
